@@ -1,0 +1,34 @@
+project_name: cost_optimized_data_warehouse
+
+ingestion:
+  mode: incremental
+  watermark_column: updated_at
+  checkpoint_table: ops.ingestion_checkpoints
+
+storage:
+  bronze_path: "s3://de-bronze/warehouse/"
+  silver_schema: "silver"
+  gold_schema: "gold"
+  format: "delta"
+
+compute:
+  etl_warehouse: "etl_medium_auto"
+  bi_warehouse: "bi_small_concurrent"
+  auto_suspend_seconds: 120
+  max_clusters: 4
+
+optimization:
+  partition_columns:
+    - event_date
+  cluster_columns:
+    - customer_id
+    - product_id
+  file_compaction: true
+  target_file_size_mb: 256
+  result_cache: true
+  materialized_views: true
+
+governance:
+  cost_attribution_table: "ops.query_cost_attribution"
+  sla_latency_seconds: 8
+  alert_channel: "slack://data-eng-alerts"

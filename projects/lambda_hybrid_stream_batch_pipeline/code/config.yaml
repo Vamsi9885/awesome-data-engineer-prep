@@ -1,0 +1,31 @@
+project_name: lambda_hybrid_stream_batch_pipeline
+
+stream:
+  source_topic: "marketplace_events"
+  checkpoint_path: "s3://de-lambda/checkpoints/speed/"
+  watermark: "15 minutes"
+  trigger_interval: "10 seconds"
+
+batch:
+  source_path: "s3://de-lambda/raw/events/"
+  schedule: "0 */2 * * *"
+  output_path: "s3://de-lambda/batch/"
+
+serving:
+  speed_table: "serving.kpi_speed"
+  batch_table: "serving.kpi_batch"
+  unified_table: "serving.kpi_unified"
+
+reconciliation:
+  allowed_drift_percent: 0.5
+  correction_mode: "batch_overrides_speed"
+
+performance:
+  partition_columns: ["event_date", "event_hour"]
+  autoscaling_enabled: true
+  file_format: "delta"
+
+reliability:
+  dedup_key: "event_id"
+  dlq_path: "s3://de-lambda/dlq/"
+  retry_attempts: 3

@@ -1,0 +1,66 @@
+project:
+  name: multi_cloud_data_lake_pipeline
+  environment: prod
+  owner: data-platform-global
+  sla:
+    silver_hourly_lag_minutes: 25
+    gold_daily_ready_utc: "05:30"
+
+sources:
+  aws:
+    orders_path: "s3://global-raw/orders/"
+    clickstream_path: "s3://global-raw/clickstream/"
+  azure:
+    payments_path: "abfss://raw@companyadls.dfs.core.windows.net/payments/"
+    catalog_path: "abfss://raw@companyadls.dfs.core.windows.net/catalog/"
+  gcp:
+    returns_path: "gs://global-raw/returns/"
+    sessions_path: "gs://global-raw/sessions/"
+
+lakehouse:
+  catalog: "lakehouse"
+  bronze_db: "bronze"
+  silver_db: "silver"
+  gold_db: "gold"
+
+tables:
+  bronze_orders: "lakehouse.bronze_orders"
+  silver_orders: "lakehouse.silver_orders"
+  gold_daily_revenue: "lakehouse.gold_daily_revenue_country"
+
+partitioning:
+  bronze:
+    - event_date
+    - source_cloud
+  silver:
+    - event_date
+    - country_code
+  gold:
+    - ds
+
+quality:
+  duplicate_threshold_pct: 0.01
+  reconciliation_variance_pct: 0.10
+  required_columns:
+    - order_id
+    - customer_id
+    - order_ts
+
+runtime:
+  spark:
+    adaptive_execution: true
+    shuffle_partitions: 800
+    autoscaling: true
+  retries:
+    max_attempts: 3
+    backoff_seconds: 120
+  watermark:
+    late_arrival_hours: 72
+
+security:
+  pii_columns:
+    - email
+    - phone
+    - address
+  encryption_at_rest: true
+  encryption_in_transit: true

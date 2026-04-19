@@ -1,0 +1,33 @@
+project_name: fraud_detection_streaming_pipeline
+
+ingestion:
+  source_topic: "card_transactions"
+  bootstrap_servers: "localhost:9092"
+  checkpoint_path: "s3://fraud/checkpoints/stream/"
+
+features:
+  velocity_windows: ["1 minute", "5 minutes"]
+  geo_anomaly: true
+  device_mismatch: true
+  ip_risk_score: true
+
+scoring:
+  rule_threshold: 70
+  model_endpoint: "http://fraud-model-service/score"
+  model_timeout_ms: 150
+  fallback_mode: "rules_only"
+
+outputs:
+  approved_topic: "tx_approved"
+  review_topic: "tx_review"
+  decisions_table: "gold.fraud_decisions"
+  features_table: "silver.fraud_features"
+
+reliability:
+  dedup_key: "transaction_id"
+  retry_attempts: 3
+  dlq_topic: "tx_fraud_dlq"
+
+performance:
+  autoscaling_enabled: true
+  partition_keys: ["event_date", "merchant_id"]

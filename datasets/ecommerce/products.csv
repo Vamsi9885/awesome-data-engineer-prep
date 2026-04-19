@@ -1,0 +1,11 @@
+product_id,name,category,price
+1001,Laptop,electronics,49999.00
+1002,Smartphone,electronics,29900.00
+1003,Headphones,audio,2999.00
+1004,Tablet,electronics,9990.00
+1005,Smart Watch,wearables,5990.00
+1006,Bluetooth Speaker,audio,14990.00
+1007,Yoga Mat,fitness,799.00
+1008,Running Shoes,footwear,1990.00
+1009,Wireless Mouse,accessories,1990.00
+1010,Mechanical Keyboard,accessories,4990.00

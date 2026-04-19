@@ -1,0 +1,33 @@
+project_name: cross_cloud_data_migration_pipeline
+
+source:
+  cloud: aws
+  storage: "s3://source-lake/"
+  cdc_topic: "source_cdc_events"
+
+target:
+  cloud: gcp
+  storage: "gs://target-lake/"
+  bronze_path: "gs://target-lake/bronze/"
+  silver_table: "silver.migrated_data"
+
+transfer:
+  mode: bulk_then_incremental
+  chunk_size_mb: 512
+  max_parallel_transfers: 64
+  retry_attempts: 5
+
+validation:
+  row_count_check: true
+  checksum_check: true
+  schema_compatibility_check: true
+  threshold_mismatch_percent: 0.01
+
+security:
+  encryption_in_transit: tls
+  encryption_at_rest: kms
+  pii_masking: true
+
+checkpointing:
+  manifest_table: "ops.migration_manifest"
+  cdc_offset_table: "ops.cdc_offsets"

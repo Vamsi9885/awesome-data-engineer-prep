@@ -1,0 +1,36 @@
+project_name: incremental_scd2_pipeline
+runtime:
+  trigger_interval: "5 minutes"
+  checkpoint_location: "s3://de-checkpoints/scd2/customer"
+  watermark_delay: "48 hours"
+
+sources:
+  cdc_stream:
+    type: kafka
+    topic: customer_cdc_events
+    bootstrap_servers: "broker1:9092,broker2:9092"
+  bronze_path: "s3://de-bronze/customer_cdc/"
+
+targets:
+  silver_path: "s3://de-silver/customer_cdc_clean/"
+  gold_table: "gold.dim_customer_scd2"
+  audit_table: "ops.scd2_batch_audit"
+
+scd2:
+  business_key: ["customer_id"]
+  tracked_columns:
+    - customer_name
+    - tier
+    - city
+    - risk_score
+    - segment
+  effective_start_col: effective_start_ts
+  effective_end_col: effective_end_ts
+  current_flag_col: is_current
+  hash_col: record_hash
+
+performance:
+  shuffle_partitions: 400
+  enable_aqe: true
+  optimize_write: true
+  auto_compact: true

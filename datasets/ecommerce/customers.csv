@@ -1,0 +1,13 @@
+customer_id,name,city,join_date,is_prime
+101,Rahul Sharma,Bangalore,2023-06-15,true
+102,Priya Patel,Mumbai,2023-05-20,true
+103,Amit Singh,Delhi,2023-07-10,false
+104,Sneha Reddy,Chennai,2023-04-05,true
+105,Vikram Joshi,Pune,2023-08-22,false
+106,Anita Gupta,Hyderabad,2023-03-12,true
+107,Rohit Kumar,Kolkata,2023-09-01,false
+108,Meera Desai,Ahmedabad,2023-02-28,true
+109,Karan Malhotra,Jaipur,2023-10-15,false
+110,Divya Nair,Lucknow,2023-01-10,true
+111,Sunil Menon,Coimbatore,2023-11-05,false
+112,Nisha Iyer,Indore,2023-12-20,true

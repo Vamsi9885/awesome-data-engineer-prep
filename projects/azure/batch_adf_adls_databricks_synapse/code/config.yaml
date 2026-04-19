@@ -1,0 +1,56 @@
+project_name: batch_adf_adls_databricks_synapse
+
+orchestration:
+  tool: azure_data_factory
+  schedule_utc: "0 1 * * *"
+  retry_attempts: 3
+  retry_backoff_seconds: 120
+
+sources:
+  azure_sql:
+    tables: ["orders", "payments", "customers"]
+    watermark_columns:
+      orders: updated_at
+      payments: updated_at
+      customers: updated_at
+  blob_csv:
+    container: "inventory-snapshots"
+    pattern: "inventory/dt={run_date}/*.csv"
+  partner_api:
+    endpoint: "https://partner.example.com/refunds"
+    pagination: true
+    checkpoint_token: true
+
+storage:
+  adls_account: "adlsprod01"
+  raw_path: "abfss://raw@adlsprod01.dfs.core.windows.net/ecomm/"
+  bronze_path: "abfss://bronze@adlsprod01.dfs.core.windows.net/ecomm/"
+  silver_path: "abfss://silver@adlsprod01.dfs.core.windows.net/ecomm/"
+  gold_path: "abfss://gold@adlsprod01.dfs.core.windows.net/ecomm/"
+
+compute:
+  databricks_job_cluster:
+    min_workers: 4
+    max_workers: 24
+    spark_version: "13.3.x-scala2.12"
+    node_type: "Standard_D8s_v5"
+
+modeling:
+  facts: ["fact_orders", "fact_payments"]
+  dimensions: ["dim_customer_scd2", "dim_product"]
+  backfill_months_supported: 24
+
+synapse:
+  dedicated_sql_pool: "synapse_dwh"
+  schema: "mart"
+  load_mode: "partitioned_upsert"
+
+quality:
+  duplicate_threshold_percent: 0.01
+  reconciliation_variance_percent: 0.05
+  quarantine_path: "abfss://quarantine@adlsprod01.dfs.core.windows.net/ecomm/"
+
+security:
+  auth_mode: managed_identity
+  secrets_provider: key_vault
+  rbac_enabled: true

@@ -1,0 +1,45 @@
+project_name: log_analytics_platform
+
+streaming:
+  source: kafka
+  topics:
+    - app_logs
+    - infra_logs
+    - audit_logs
+  checkpoint_location: "s3://de-checkpoints/log-analytics/"
+  trigger_interval: "1 minute"
+  watermark: "30 minutes"
+
+storage:
+  bronze_path: "s3://de-bronze/logs/"
+  silver_table: "silver.logs_curated"
+  gold_table: "gold.logs_aggregates"
+  dlq_path: "s3://de-dlq/logs/"
+
+search:
+  index_name: "prod-logs-index"
+  endpoint: "https://opensearch.company.internal"
+
+quality:
+  required_columns:
+    - timestamp
+    - service_name
+    - severity
+    - message
+  accepted_severity:
+    - DEBUG
+    - INFO
+    - WARN
+    - ERROR
+    - FATAL
+
+performance:
+  shuffle_partitions: 600
+  enable_aqe: true
+  optimize_write: true
+  auto_compact: true
+
+retention:
+  hot_days: 7
+  warm_days: 30
+  cold_days: 365

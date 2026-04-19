@@ -1,0 +1,51 @@
+project:
+  name: real_time_ride_tracking_system
+  owner: mobility-data-platform
+  environment: prod
+
+ingress:
+  mode: interchangeable
+  aws_kinesis_stream: "rides-events-prod"
+  azure_event_hubs_namespace: "rideeh-prod"
+  gcp_pubsub_subscription: "projects/mobility/subscriptions/rides-prod"
+
+tables:
+  bronze: "rides.bronze_events"
+  silver: "rides.silver_events"
+  gold_active: "rides.gold_active_rides_1min"
+  gold_cancel: "rides.gold_cancellation_rate_5min"
+
+watermarks:
+  operational_minutes: 15
+  billing_minutes: 120
+
+sla:
+  p95_processing_latency_seconds: 5
+  end_to_end_latency_seconds: 10
+  availability_percent: 99.95
+
+runtime:
+  spark:
+    adaptive_execution: true
+    shuffle_partitions: 1200
+    autoscaling: true
+  checkpoint_paths:
+    bronze: "/mnt/checkpoints/rides/bronze"
+    silver: "/mnt/checkpoints/rides/silver"
+    gold_active: "/mnt/checkpoints/rides/gold_active"
+
+quality:
+  required_fields:
+    - event_id
+    - ride_id
+    - city_id
+    - event_ts
+    - event_type
+  duplicate_tolerance_percent: 0.02
+
+security:
+  tokenized_fields:
+    - rider_id
+    - driver_id
+  encryption_at_rest: true
+  encryption_in_transit: true
